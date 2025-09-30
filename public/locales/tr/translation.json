@@ -1,5 +1,6 @@
 {
   "mainTitle": "Pawn's Gambit",
+  "start": "Başlat",
   "level": "Seviye",
   "pegsRemaining": "Kalan Taş",
   "result": "Sonuç",
@@ -35,7 +36,8 @@
     "title": "Panel",
     "tabs": {
       "stats": "İstatistikler",
-      "achievements": "Başarılar"
+  "achievements": "Başarılar",
+  "badges": "Rozetler"
     }
   },
   "stats": {
@@ -94,5 +96,7 @@
     "moron": "Geri Zekalı",
     "brainless": "Beyinsiz"
   },
-  "ratingWithScore": "{{rating}} ({{score}} Puan)"
+  "ratingWithScore": "{{rating}} ({{score}} Puan)",
+  "mint": "Mintle",
+  "close": "Kapat"
 }

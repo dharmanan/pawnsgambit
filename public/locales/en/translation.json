@@ -35,7 +35,8 @@
     "title": "Dashboard",
     "tabs": {
       "stats": "Statistics",
-      "achievements": "Achievements"
+  "achievements": "Achievements",
+  "badges": "Badges"
     }
   },
   "stats": {
@@ -94,5 +95,7 @@
     "moron": "Moron",
     "brainless": "Brainless"
   },
-  "ratingWithScore": "{{rating}} ({{score}} Points)"
+  "ratingWithScore": "{{rating}} ({{score}} Points)",
+  "mint": "Mint",
+  "close": "Close"
 }

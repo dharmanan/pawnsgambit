@@ -1,66 +1,82 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ACHIEVEMENT_LEVELS } from '../scoring';
 import { CharacterIcon } from './Characters';
 
 interface AchievementsPanelProps {
-    unlockedBadges: string[];
+    unlocked: boolean[][]; // [seviye][başarı] unlocked
+    onMint: (level: number, badge: number) => void;
 }
 
-const characterNameMap: Record<string, string> = {
-    'genius': 'Bilgin',
-    'intelligent': 'Zeki',
-    'cunning': 'Kurnaz',
-    'successful': 'Başarılı',
-    'normal': 'Normal',
-    'inexperienced': 'Tecrübesiz',
-    'stupid': 'Aptal',
-    'moron': 'Geri Zekalı',
-    'brainless': 'Beyinsiz',
-};
+const badgeNames = [
+    'Bilgin', 'Zeki', 'Kurnaz', // Seviye 1
+    'Bilgin', 'Zeki', 'Kurnaz', // Seviye 2
+    'Bilgin', 'Zeki', 'Kurnaz', // Seviye 3
+];
 
-const Badge: React.FC<{ name: string; description: string; isUnlocked: boolean; identifier: string; }> = ({ name, description, isUnlocked, identifier }) => {
-    const unlockedStyle = "bg-yellow-500/10 border-yellow-500/30";
-    const lockedStyle = "bg-gray-700/20 border-gray-500/30 filter grayscale";
+const AchievementsPanel: React.FC<AchievementsPanelProps> = ({ unlocked, onMint }) => {
+    const [modal, setModal] = useState<{ level: number; badge: number } | null>(null);
 
-    return (
-        <div 
-            title={isUnlocked ? `${name}: ${description}` : `Locked: ${description}`}
-            className={`relative flex flex-col items-center justify-center p-2 rounded-lg border transition-transform transform hover:scale-105 ${isUnlocked ? unlockedStyle : lockedStyle}`}
-        >
-            <div className={`w-16 h-16 ${!isUnlocked ? 'opacity-50' : ''}`}>
-                <CharacterIcon ratingName={characterNameMap[identifier]} />
-            </div>
-            <span className={`mt-1 text-xs font-semibold ${isUnlocked ? 'text-yellow-300' : 'text-gray-400'}`}>{name}</span>
-            {!isUnlocked && (
-                <div className="absolute top-1 right-1 text-gray-400">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                        <path fillRule="evenodd" d="M10 2a4 4 0 00-4 4v2H4a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2v-8a2 2 0 00-2-2h-2V6a4 4 0 00-4-4zm-2 4V6a2 2 0 114 0v2H8z" clipRule="evenodd" />
-                    </svg>
-                </div>
-            )}
-        </div>
-    );
-}
+    // Güvenli unlocked dizisi: undefined veya eksikse 3x3 false ile doldur
+    const safeUnlocked = Array.isArray(unlocked) && unlocked.length === 3
+        ? unlocked.map(row => Array.isArray(row) && row.length === 3 ? row : [false, false, false])
+        : [[false, false, false], [false, false, false], [false, false, false]];
 
-const AchievementsPanel: React.FC<AchievementsPanelProps> = ({ unlockedBadges }) => {
     const { t } = useTranslation();
-    const unlockedSet = new Set(unlockedBadges);
-
     return (
-        <div>
-            <h4 className="text-lg font-bold mb-3 text-yellow-300 border-b-2 border-yellow-400/50 pb-1 text-center">{t('achievements.title')}</h4>
-            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-3 gap-2">
-                {ACHIEVEMENT_LEVELS.map(level => (
-                    <Badge 
-                        key={level.identifier}
-                        name={t(level.nameKey)}
-                        description={t(level.descriptionKey)}
-                        isUnlocked={unlockedSet.has(level.identifier)}
-                        identifier={level.identifier}
-                    />
+        <div className="w-full max-w-2xl mx-auto mt-6">
+            <h2 className="text-2xl font-bold text-center mb-6 tracking-wide text-yellow-400 drop-shadow-lg">{t('sidebar.tabs.badges')}</h2>
+            <div className="flex flex-col gap-8">
+                {[0, 1, 2].map(level => (
+                    <div key={level} className="bg-black/10 border border-yellow-300 rounded-2xl shadow-md py-6 px-2 flex flex-col items-center">
+                        <span className="font-extrabold text-xl mb-4 text-yellow-500 drop-shadow text-center tracking-wide uppercase">{t('level') + ' ' + (level + 1)}</span>
+                        <div className="flex flex-row gap-10 justify-center items-end mb-2">
+                            {[0, 1, 2].map(badge => (
+                                <div key={badge} className="flex flex-col items-center">
+                                    <button
+                                        className={`transition-all duration-150 rounded-full border-4 p-2 bg-transparent shadow-lg ${safeUnlocked[level][badge] ? 'border-green-400' : 'border-gray-300 opacity-50'} hover:scale-105`}
+                                        onClick={() => setModal({ level, badge })}
+                                        disabled={!safeUnlocked[level][badge]}
+                                        title={t(`achievements.${ACHIEVEMENT_LEVELS[badge].identifier}.name`)}
+                                    >
+                                        <img
+                                            src={`/badges/${level === 0 ? badge + 1 : level === 1 ? `2${badge + 1}` : `3${badge + 1}`}.png`}
+                                            alt={t(`achievements.${ACHIEVEMENT_LEVELS[badge].identifier}.name`)}
+                                            className={`w-24 h-24 object-contain ${safeUnlocked[level][badge] ? '' : 'opacity-50 grayscale'}`}
+                                        />
+                                    </button>
+                                    <span className={`mt-3 text-base font-bold text-center ${safeUnlocked[level][badge] ? 'text-green-700' : 'text-gray-400'}`}>{t(`achievements.${ACHIEVEMENT_LEVELS[badge].identifier}.name`)}</span>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
                 ))}
             </div>
+            {/* Modal */}
+            {modal && (
+                <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
+                    <div className="bg-white rounded-xl p-6 shadow-lg flex flex-col items-center">
+                        <img
+                            src={`/badges/${modal.level === 0 ? modal.badge + 1 : modal.level === 1 ? `2${modal.badge + 1}` : `3${modal.badge + 1}`}.png`}
+                            alt={badgeNames[modal.level * 3 + modal.badge]}
+                            className="w-40 h-40 object-contain mb-4"
+                        />
+                        <span className="font-bold text-lg mb-2">{badgeNames[modal.level * 3 + modal.badge]}</span>
+                        <button
+                            className="bg-gradient-to-b from-green-500 to-green-700 text-white font-bold py-2 px-6 rounded-lg shadow-lg hover:from-green-600 hover:to-green-800 transition mb-2"
+                            onClick={() => { onMint(modal.level, modal.badge); setModal(null); }}
+                        >
+                            {t('mint')}
+                        </button>
+                        <button
+                            className="text-gray-500 mt-2 underline text-sm"
+                            onClick={() => setModal(null)}
+                        >
+                            {t('close')}
+                        </button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

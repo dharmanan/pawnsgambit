@@ -21,12 +21,12 @@ const InfoPanel: React.FC<InfoPanelProps> = ({ pegCount, gameEnded, level }) => 
     return (
         <div className="my-5 text-center w-full max-w-2xl px-2 sm:px-4">
             <div className="flex flex-col items-center">
-                <LanguageSwitcher />
                 <h1 className="game-title mt-2">{t('mainTitle')}</h1>
             </div>
-            <div className="info-panel-details space-x-6">
+            <div className="flex items-center justify-center space-x-6 mt-2">
                 <h2 className="info-text">{t('level')}: {level}</h2>
                 <h2 className="info-text">{t('pegsRemaining')}: {pegCount}</h2>
+                <div className="ml-4"><LanguageSwitcher /></div>
             </div>
             {gameEnded && (
                 <h3 className="text-xl mt-2 text-yellow-300">
