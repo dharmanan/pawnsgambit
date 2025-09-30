@@ -3,6 +3,7 @@ pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/utils/Strings.sol";
 
 contract HulkBadges is ERC721URIStorage, Ownable {
     uint256 public nextTokenId;
@@ -27,14 +28,11 @@ contract HulkBadges is ERC721URIStorage, Ownable {
         require(bytes(meta.name).length > 0, "Badge metadata not set");
         uint256 tokenId = nextTokenId++;
         _safeMint(msg.sender, tokenId);
-        string memory json = string(abi.encodePacked(
-            '{',
-                '"name":"', meta.name, '",',
-                '"description":"', meta.description, '",',
-                '"image":"', meta.image, '"',
-            '}'
+        string memory tokenURI = string(abi.encodePacked(
+            "https://your-vercel-app.vercel.app/badges/",
+            Strings.toString(badgeId),
+            ".json"
         ));
-        string memory tokenURI = string(abi.encodePacked("data:application/json;base64,", base64(bytes(json))));
         _setTokenURI(tokenId, tokenURI);
         mintedBadge[msg.sender][badgeId] = true;
     }

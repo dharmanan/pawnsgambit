@@ -10,7 +10,7 @@ import Sidebar from './components/Sidebar';
 import LevelSelectModal from './components/LevelSelectModal';
 import HelpModal from './components/HelpModal'; // Import HelpModal
 import { LEVELS } from './levels';
-import { getScoreFromPegs, getIntelligenceRatingKey } from './scoring';
+import { getScoreFromPegs, getIntelligenceRatingKey, ACHIEVEMENT_LEVELS } from './scoring';
 import type { BoardState, Position, GameStats } from './types';
 import { playSound, stopSound } from './sounds';
 import { ethers } from "ethers";
@@ -328,13 +328,26 @@ const App: React.FC = () => {
                 isEndGame
             });
 
-    // Dummy unlocked: 3x3 grid, hepsi açık
-    const unlockedBadges = [
-        [true, true, true],
-        [true, true, true],
-        [true, true, true],
-    ];
+    // Dummy unlocked: 3x3 grid, hepsi açık değil, gerçek başarıya göre ayarlayacağım
+    const unlockedBadges = useMemo(() => {
+        // stats.achievementsByLevel: { [level]: [badgeIdentifier, ...] }
+        // ACHIEVEMENT_LEVELS: [{ identifier: "genius" }, ...]
+        return [0, 1, 2].map(level => {
+            const levelBadges = stats.achievementsByLevel[level + 1] || [];
+            return [0, 1, 2].map(badge => {
+                const identifier = ACHIEVEMENT_LEVELS[badge].identifier;
+                return levelBadges.includes(identifier);
+            });
+        });
+    }, [stats.achievementsByLevel]);
+
     const handleMint = async (level: number, badge: number) => {
+        // Rozet id hesaplama düzeltildi
+        const badgeId = level * 3 + badge + 1 - 3;
+        if (badgeId < 1) {
+            alert("Geçersiz rozet seçimi!");
+            return;
+        }
         try {
             if (!window.ethereum) {
                 alert("Cüzdan (MetaMask) yüklü değil!");
@@ -344,8 +357,6 @@ const App: React.FC = () => {
             const provider = new ethers.providers.Web3Provider(window.ethereum);
             const signer = provider.getSigner();
             const contract = new ethers.Contract(HULK_BADGES_ADDRESS, HULK_BADGES_ABI, signer);
-            // BadgeId hesaplama: 1-9 arası
-            const badgeId = level * 3 + badge + 1 - 3; // (level:0, badge:0) => 1
             const tx = await contract.mintBadge(badgeId);
             await tx.wait();
             alert(`Rozet mintlendi! BadgeId: ${badgeId}`);
