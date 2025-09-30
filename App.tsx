@@ -344,8 +344,9 @@ const App: React.FC = () => {
     const handleMint = async (level: number, badge: number) => {
         // Rozet id hesaplama düzeltildi
         const badgeId = level * 3 + badge + 1 - 3;
-        if (badgeId < 1) {
-            alert("Geçersiz rozet seçimi!");
+        // Unlocked kontrolü
+        if (badgeId < 1 || badgeId > 33 || !unlockedBadges[level][badge]) {
+            alert("Bu rozet mintlenemez! Önce başarıyı açmalısınız.");
             return;
         }
         try {
