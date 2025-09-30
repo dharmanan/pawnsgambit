@@ -37,7 +37,7 @@ const StatsPanel: React.FC<StatsPanelProps> = ({ stats, unlockedBadges }) => {
             </div>
             {/* Rozet grid - badges paneli gibi alt alta 3 seviye, her seviyede yatayda 3 rozet ve isimleri */}
             <div className="flex flex-col gap-4 mt-4">
-                {[0, 1, 2].map(level => (
+                {[2, 1, 0].map(level => (
                     <div key={level} className="bg-black/10 border border-yellow-300 rounded-2xl shadow-md py-4 px-2 flex flex-col items-center">
                         <span className="font-extrabold text-xl mb-2 text-yellow-500 drop-shadow text-center tracking-wide uppercase">{t('level') + ' ' + (level + 1)}</span>
                         <div className="flex flex-row gap-8 justify-center items-end mb-1">
@@ -48,7 +48,7 @@ const StatsPanel: React.FC<StatsPanelProps> = ({ stats, unlockedBadges }) => {
                                         title={t(`achievements.${ACHIEVEMENT_LEVELS[badge].identifier}.name`)}
                                     >
                                         <img
-                                            src={`/badges/${level === 0 ? badge + 1 : level === 1 ? `2${badge + 1}` : `3${badge + 1}`}.png`}
+                                            src={`/badges/${(2 - level) * 3 + badge}.png`}
                                             alt={t(`achievements.${ACHIEVEMENT_LEVELS[badge].identifier}.name`)}
                                             className={`w-20 h-20 object-contain ${unlockedBadges[level][badge] ? '' : 'opacity-50 grayscale'}`}
                                         />

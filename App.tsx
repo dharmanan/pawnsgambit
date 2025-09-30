@@ -23,9 +23,10 @@ const initialStats: GameStats = {
     achievementsByLevel: {},
 };
 
-const HULK_BADGES_ADDRESS = "0x4C9C198bC9DCecb2d22e3a1C82052543E334cae2";
+const HULK_BADGES_ADDRESS = "0x3d9499563E72A637D4b45eCAFfA3c5e29357fB57";
 const HULK_BADGES_ABI = [
-  "function mintBadge(uint256 badgeId) external"
+    "function mintBadge(uint256 badgeId) external",
+    "function ownerMint(address to, uint256 badgeId) external"
 ];
 
 const App: React.FC = () => {
@@ -58,9 +59,23 @@ const App: React.FC = () => {
     const [stats, setStats] = useState<GameStats>(initialStats);
     const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false);
     const [isLevelSelectOpen, setIsLevelSelectOpen] = useState<boolean>(false);
+    const [mintedNft, setMintedNft] = useState<{ badgeId: string, tokenId: string, image: string } | null>(null);
     const [isHelpModalOpen, setIsHelpModalOpen] = useState<boolean>(false); // State for Help Modal
     const [isEndGame, setIsEndGame] = useState<boolean>(false); // State for end-game animation
 
+    // Hamle sayısı takibi için state
+    const [moveCount, setMoveCount] = useState(0);
+    // unlockedBadges: Her seviyede 3 taş kalınca o seviyenin rozetleri açılır
+    const [unlockedBadges, setUnlockedBadges] = useState<boolean[][]>([[false, false, false], [false, false, false], [false, false, false]]);
+
+    useEffect(() => {
+        // achievementsByLevel'dan otomatik açılacak rozetleri hesapla
+        const newUnlocked = [0, 1, 2].map(lvlIdx => {
+            const levelBadges = stats.achievementsByLevel[lvlIdx + 1] || [];
+            return ACHIEVEMENT_LEVELS.map(level => levelBadges.includes(level.identifier));
+        });
+        setUnlockedBadges(newUnlocked);
+    }, [stats]);
 
     // Load stats from localStorage on initial render
     useEffect(() => {
@@ -187,27 +202,25 @@ const App: React.FC = () => {
 
 
     useEffect(() => {
-    const initialPegCount = LEVELS[level - 1]?.layout.flat().filter((c: number) => c === 1).length - 1;
+        const initialPegCount = LEVELS[level - 1]?.layout.flat().filter((c: number) => c === 1).length - 1;
         if (pegCount < initialPegCount && !gameEnded) {
-            if (pegCount === 1 || !hasAnyValidMoves()) {
+            // Sadece 3 taş kalınca başarı açılır
+            if (pegCount === 3) {
                 setGameEnded(true);
-                 const score = getScoreFromPegs(pegCount);
-                 if (score >= 150) { // Cunning or better
-                    playSound('win');
-                 } else {
-                    playSound('lose');
-                 }
-                 const newBadgeIdentifier = getIntelligenceRatingKey(pegCount, true); // Get the raw identifier
-
+                playSound('win');
                 setStats((prevStats: GameStats) => {
                     const newGamesPlayed = prevStats.gamesPlayed + 1;
-                    const newTotalScore = prevStats.totalScore + score;
-                    const newHighScore = Math.max(prevStats.highScore, score);
-                    const newGamesWon = pegCount <= 3 ? prevStats.gamesWon + 1 : prevStats.gamesWon;
-                    
-                    const currentLevelBadges = prevStats.achievementsByLevel[level] || [];
-                    const newLevelBadges = [...new Set([...currentLevelBadges, newBadgeIdentifier])];
-
+                    const newTotalScore = prevStats.totalScore + getScoreFromPegs(pegCount);
+                    const newHighScore = Math.max(prevStats.highScore, getScoreFromPegs(pegCount));
+                    const newGamesWon = prevStats.gamesWon + 1;
+                    let currentLevelBadges = prevStats.achievementsByLevel[level] || [];
+                    let newLevelBadges = [...currentLevelBadges];
+                    // Seviye 1'de 'cunning' açıksa, seviye 2'de 3 taş bırakınca otomatik açılır
+                    if (level > 1 && (prevStats.achievementsByLevel[level - 1] || []).includes('cunning')) {
+                        newLevelBadges = [...new Set([...newLevelBadges, 'cunning'])];
+                    } else {
+                        newLevelBadges = [...new Set([...newLevelBadges, 'cunning'])];
+                    }
                     return {
                         gamesPlayed: newGamesPlayed,
                         totalScore: newTotalScore,
@@ -219,13 +232,45 @@ const App: React.FC = () => {
                         },
                     };
                 });
+            } else if (pegCount === 2) {
+                setGameEnded(true);
+                playSound('win');
+                setStats((prevStats: GameStats) => {
+                    const newGamesPlayed = prevStats.gamesPlayed + 1;
+                    const newTotalScore = prevStats.totalScore + getScoreFromPegs(pegCount);
+                    const newHighScore = Math.max(prevStats.highScore, getScoreFromPegs(pegCount));
+                    const newGamesWon = prevStats.gamesWon + 1;
+                    let currentLevelBadges = prevStats.achievementsByLevel[level] || [];
+                    let newLevelBadges = [...currentLevelBadges];
+                    // Seviye 1'de 'intelligent' açıksa, seviye 2'de 2 taş bırakınca otomatik açılır
+                    if (level > 1 && (prevStats.achievementsByLevel[level - 1] || []).includes('intelligent')) {
+                        newLevelBadges = [...new Set([...newLevelBadges, 'intelligent'])];
+                    } else {
+                        newLevelBadges = [...new Set([...newLevelBadges, 'intelligent'])];
+                    }
+                    return {
+                        gamesPlayed: newGamesPlayed,
+                        totalScore: newTotalScore,
+                        highScore: newHighScore,
+                        gamesWon: newGamesWon,
+                        achievementsByLevel: {
+                            ...prevStats.achievementsByLevel,
+                            [level]: newLevelBadges,
+                        },
+                    };
+                });
+            } else if (pegCount === 1 || !hasAnyValidMoves()) {
+                setGameEnded(true);
+                playSound('lose');
             }
         }
     }, [board, pegCount, gameEnded, hasAnyValidMoves, level]);
 
 
+    // Her hamlede moveCount'u artır
     const makeMove = useCallback((from: Position, to: Position) => {
         playSound('move');
+        setMoveCount(prev => prev + 1);
         const jumpedRow = (from.row + to.row) / 2;
         const jumpedCol = (from.col + to.col) / 2;
         const jumpedPosition = { row: jumpedRow, col: jumpedCol };
@@ -253,6 +298,8 @@ const App: React.FC = () => {
 
     }, [board]);
 
+
+    // Manuel başarı açma kodları kaldırıldı
 
     const handleCellClick = useCallback((pos: Position) => {
         if (gameEnded || jumpedPeg) return;
@@ -328,27 +375,16 @@ const App: React.FC = () => {
                 isEndGame
             });
 
-    // Dummy unlocked: 3x3 grid, hepsi açık değil, gerçek başarıya göre ayarlayacağım
-    const unlockedBadges = useMemo(() => {
-        // stats.achievementsByLevel: { [level]: [badgeIdentifier, ...] }
-        // ACHIEVEMENT_LEVELS: [{ identifier: "genius" }, ...]
-        return [0, 1, 2].map(level => {
-            const levelBadges = stats.achievementsByLevel[level + 1] || [];
-            return [0, 1, 2].map(badge => {
-                const identifier = ACHIEVEMENT_LEVELS[badge].identifier;
-                return levelBadges.includes(identifier);
-            });
-        });
-    }, [stats.achievementsByLevel]);
+    // unlockedBadges artık state üzerinden yönetiliyor
 
     const handleMint = async (level: number, badge: number) => {
-        // Rozet id hesaplama düzeltildi
-        const badgeId = level * 3 + badge + 1 - 3;
-        // Unlocked kontrolü
-        if (badgeId < 1 || badgeId > 33 || !unlockedBadges[level][badge]) {
-            alert("Bu rozet mintlenemez! Önce başarıyı açmalısınız.");
-            return;
-        }
+        // Rozet id hesaplama düzeltildi (unlockedBadges ile tam uyumlu)
+    // Yeni rozet adresleme mantığı
+    // Seviye 1: 3. rozet id:9, 2. rozet id:8, 1. rozet id:7
+    // Seviye 2: 3. rozet id:6, 2. rozet id:5, 1. rozet id:4
+    // Seviye 3: 3. rozet id:3, 2. rozet id:2, 1. rozet id:1
+    // Rastgele badgeId mapping: badgeId = badge + level * 3
+    let badgeId = (2 - level) * 3 + badge;
         try {
             if (!window.ethereum) {
                 alert("Cüzdan (MetaMask) yüklü değil!");
@@ -358,9 +394,34 @@ const App: React.FC = () => {
             const provider = new ethers.providers.Web3Provider(window.ethereum);
             const signer = provider.getSigner();
             const contract = new ethers.Contract(HULK_BADGES_ADDRESS, HULK_BADGES_ABI, signer);
-            const tx = await contract.mintBadge(badgeId);
-            await tx.wait();
-            alert(`Rozet mintlendi! BadgeId: ${badgeId}`);
+            const userAddress = await signer.getAddress();
+            const tx = await contract.ownerMint(userAddress, badgeId);
+            const receipt = await tx.wait();
+            const event = receipt.events?.find((e: any) => e.event === "BadgeMinted");
+                        if (event) {
+                                const mintedTokenId = event.args?.tokenId;
+                                const mintedBadgeId = event.args?.badgeId;
+                                const mintedTokenURI = event.args?.tokenURI;
+                                fetch(mintedTokenURI)
+                                    .then(res => res.json())
+                                    .then(meta => {
+                                        setMintedNft({ badgeId: mintedBadgeId.toString(), tokenId: mintedTokenId.toString(), image: meta.image });
+                                    })
+                                    .catch(() => {
+                                        setMintedNft({ badgeId: mintedBadgeId.toString(), tokenId: mintedTokenId.toString(), image: "" });
+                                    });
+                        } else {
+                                // Event yoksa badgeId ile metadata linkini doğrudan çek
+                                const fallbackTokenURI = `/badges/${badgeId}.json`;
+                                fetch(fallbackTokenURI)
+                                    .then(res => res.json())
+                                    .then(meta => {
+                                        setMintedNft({ badgeId: badgeId.toString(), tokenId: "?", image: meta.image });
+                                    })
+                                    .catch(() => {
+                                        setMintedNft({ badgeId: badgeId.toString(), tokenId: "?", image: "" });
+                                    });
+                        }
         } catch (err: any) {
             alert("Mint işlemi başarısız: " + (err?.message || err));
         }
@@ -368,6 +429,22 @@ const App: React.FC = () => {
 
     return (
         <div className="text-white min-h-screen font-sans p-4">
+            {/* Mintlenen NFT görsel modalı */}
+            {mintedNft && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60">
+                    <div className="bg-[#222] rounded-lg shadow-lg p-6 flex flex-col items-center">
+                        <h2 className="text-xl font-bold mb-2">Mintlenen NFT</h2>
+                        <div className="mb-2">BadgeId: {mintedNft.badgeId}</div>
+                        <div className="mb-2">TokenId: {mintedNft.tokenId}</div>
+                        {mintedNft.image ? (
+                            <img src={mintedNft.image} alt="Mintlenen NFT" className="w-32 h-32 object-contain rounded border mb-2" />
+                        ) : (
+                            <div className="mb-2 text-red-400">Görsel bulunamadı</div>
+                        )}
+                        <button className="mt-2 px-4 py-2 bg-yellow-700 text-white rounded" onClick={() => setMintedNft(null)}>Kapat</button>
+                    </div>
+                </div>
+            )}
             <Sidebar isOpen={isSidebarOpen} onClose={closeSidebar} stats={stats} unlockedBadges={unlockedBadges} onMint={handleMint} />
             <LevelSelectModal 
                 isOpen={isLevelSelectOpen}
@@ -411,7 +488,7 @@ const App: React.FC = () => {
                                         <rect x="9.5" y="10.5" width="5" height="6" rx="2.5" />
                                         <ellipse cx="12" cy="19" rx="5.5" ry="2.2" />
                                     </svg>
-                                    {t('start')}
+                                    Start
                                 </button>
                                 <button
                                     className="flex items-center justify-center bg-gradient-to-b from-[#a0522d] to-[#8b4513] text-white font-bold py-2 px-5 m-1 rounded-lg border border-[#5c3a1a] border-b-4 border-b-[#4a2f16] shadow-lg transition-all duration-150 ease-in-out transform hover:from-[#b0623d] hover:to-[#9b5523] hover:-translate-y-px active:translate-y-px active:border-b-2 active:from-[#8b4513] active:to-[#a0522d] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[#1a472a] focus:ring-yellow-400 text-lg"

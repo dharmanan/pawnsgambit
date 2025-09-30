@@ -14,7 +14,7 @@ export default function BadgeMintButton() {
       setStatus("Metamask gerekli!");
       return;
     }
-    setStatus("Mint işlemi başlatılıyor...");
+  setStatus("Mint işlemi başlatıldı...");
     try {
       // Ethers v5 ile Web3Provider
       const provider = new ethers.providers.Web3Provider((window as any).ethereum);

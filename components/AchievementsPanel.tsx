@@ -27,7 +27,7 @@ const AchievementsPanel: React.FC<AchievementsPanelProps> = ({ unlocked, onMint 
         <div className="w-full max-w-2xl mx-auto mt-6">
             <h2 className="text-2xl font-bold text-center mb-6 tracking-wide text-yellow-400 drop-shadow-lg">{t('sidebar.tabs.badges')}</h2>
             <div className="flex flex-col gap-8">
-                {[0, 1, 2].map(level => (
+                {[2, 1, 0].map(level => (
                     <div key={level} className="bg-black/10 border border-yellow-300 rounded-2xl shadow-md py-6 px-2 flex flex-col items-center">
                         <span className="font-extrabold text-xl mb-4 text-yellow-500 drop-shadow text-center tracking-wide uppercase">{t('level') + ' ' + (level + 1)}</span>
                         <div className="flex flex-row gap-10 justify-center items-end mb-2">
@@ -40,7 +40,7 @@ const AchievementsPanel: React.FC<AchievementsPanelProps> = ({ unlocked, onMint 
                                         title={t(`achievements.${ACHIEVEMENT_LEVELS[badge].identifier}.name`)}
                                     >
                                         <img
-                                            src={`/badges/${level === 0 ? badge + 1 : level === 1 ? `2${badge + 1}` : `3${badge + 1}`}.png`}
+                                            src={`/badges/${(2 - level) * 3 + badge}.png`}
                                             alt={t(`achievements.${ACHIEVEMENT_LEVELS[badge].identifier}.name`)}
                                             className={`w-24 h-24 object-contain ${safeUnlocked[level][badge] ? '' : 'opacity-50 grayscale'}`}
                                         />
@@ -57,17 +57,21 @@ const AchievementsPanel: React.FC<AchievementsPanelProps> = ({ unlocked, onMint 
                 <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
                     <div className="bg-white rounded-xl p-6 shadow-lg flex flex-col items-center">
                         <img
-                            src={`/badges/${modal.level === 0 ? modal.badge + 1 : modal.level === 1 ? `2${modal.badge + 1}` : `3${modal.badge + 1}`}.png`}
-                            alt={badgeNames[modal.level * 3 + modal.badge]}
+                            src={`/badges/${(2 - modal.level) * 3 + modal.badge}.png`}
+                            alt={badgeNames[(2 - modal.level) * 3 + modal.badge]}
                             className="w-40 h-40 object-contain mb-4"
                         />
                         <span className="font-bold text-lg mb-2">{badgeNames[modal.level * 3 + modal.badge]}</span>
-                        <button
-                            className="bg-gradient-to-b from-green-500 to-green-700 text-white font-bold py-2 px-6 rounded-lg shadow-lg hover:from-green-600 hover:to-green-800 transition mb-2"
-                            onClick={() => { onMint(modal.level, modal.badge); setModal(null); }}
-                        >
-                            {t('mint')}
-                        </button>
+                        {safeUnlocked[modal.level][modal.badge] ? (
+                          <button
+                              className="bg-gradient-to-b from-green-500 to-green-700 text-white font-bold py-2 px-6 rounded-lg shadow-lg hover:from-green-600 hover:to-green-800 transition mb-2"
+                              onClick={() => { onMint(modal.level, modal.badge); setModal(null); }}
+                          >
+                              {t('mint')}
+                          </button>
+                        ) : (
+                          <span className="text-gray-400 font-bold mb-2">Bu rozet henüz açılmadı!</span>
+                        )}
                         <button
                             className="text-gray-500 mt-2 underline text-sm"
                             onClick={() => setModal(null)}

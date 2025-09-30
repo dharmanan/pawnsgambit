@@ -7,60 +7,23 @@ async function main() {
   console.log("HulkBadges deployed to:", contract.address);
 
   // Rozet metadata'larını ekle
+  // Yeni badge adresleme ve Vercel linkleriyle metadata
   const badgeMetas = [
-    {
-      name: "Bilgin 1",
-      description: "Seviye 1 Bilgin Rozeti",
-      image: "https://yourdomain.com/badges/1.png"
-    },
-    {
-      name: "Zeki 1",
-      description: "Seviye 1 Zeki Rozeti",
-      image: "https://yourdomain.com/badges/2.png"
-    },
-    {
-      name: "Kurnaz 1",
-      description: "Seviye 1 Kurnaz Rozeti",
-      image: "https://yourdomain.com/badges/3.png"
-    },
-    {
-      name: "Bilgin 2",
-      description: "Seviye 2 Bilgin Rozeti",
-      image: "https://yourdomain.com/badges/21.png"
-    },
-    {
-      name: "Zeki 2",
-      description: "Seviye 2 Zeki Rozeti",
-      image: "https://yourdomain.com/badges/22.png"
-    },
-    {
-      name: "Kurnaz 2",
-      description: "Seviye 2 Kurnaz Rozeti",
-      image: "https://yourdomain.com/badges/23.png"
-    },
-    {
-      name: "Bilgin 3",
-      description: "Seviye 3 Bilgin Rozeti",
-      image: "https://yourdomain.com/badges/31.png"
-    },
-    {
-      name: "Zeki 3",
-      description: "Seviye 3 Zeki Rozeti",
-      image: "https://yourdomain.com/badges/32.png"
-    },
-    {
-      name: "Kurnaz 3",
-      description: "Seviye 3 Kurnaz Rozeti",
-      image: "https://yourdomain.com/badges/33.png"
-    }
+    { id: 0, name: "En Değerli Rozet", description: "En değerli rozet", image: "https://pawnsgambit.vercel.app/badges/0.png" },
+    { id: 1, name: "Seviye 3 1. Rozet", description: "Seviye 3 birinci rozet", image: "https://pawnsgambit.vercel.app/badges/1.png" },
+    { id: 2, name: "Seviye 3 2. Rozet", description: "Seviye 3 ikinci rozet", image: "https://pawnsgambit.vercel.app/badges/2.png" },
+    { id: 3, name: "Seviye 3 3. Rozet", description: "Seviye 3 üçüncü rozet", image: "https://pawnsgambit.vercel.app/badges/3.png" },
+    { id: 4, name: "Seviye 2 1. Rozet", description: "Seviye 2 birinci rozet", image: "https://pawnsgambit.vercel.app/badges/4.png" },
+    { id: 5, name: "Seviye 2 2. Rozet", description: "Seviye 2 ikinci rozet", image: "https://pawnsgambit.vercel.app/badges/5.png" },
+    { id: 6, name: "Seviye 1 1. Rozet", description: "Seviye 1 birinci rozet", image: "https://pawnsgambit.vercel.app/badges/6.png" },
+    { id: 7, name: "Seviye 1 2. Rozet", description: "Seviye 1 ikinci rozet", image: "https://pawnsgambit.vercel.app/badges/7.png" }
   ];
 
-  for (let i = 0; i < badgeMetas.length; i++) {
-    const meta = badgeMetas[i];
-    await contract.setBadgeMeta(i, meta.name, meta.description, meta.image, {
+  for (const meta of badgeMetas) {
+    await contract.setBadgeMeta(meta.id, meta.name, meta.description, meta.image, {
       gasPrice: hre.ethers.utils.parseUnits("30", "gwei")
     });
-    console.log(`Badge ${i} metadata set.`);
+    console.log(`Badge ${meta.id} metadata set.`);
     await new Promise(r => setTimeout(r, 3000)); // 3 saniye bekle
   }
 }

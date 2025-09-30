@@ -5,7 +5,7 @@
   "pegsRemaining": "Kalan Taş",
   "result": "Sonuç",
   "controls": {
-    "restart": "Yeniden Başlat",
+  "restart": "Yeniden",
     "selectLevel": "Seviye Seç",
     "stats": "İstatistikler",
     "help": "Yardım"

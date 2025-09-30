@@ -6,6 +6,22 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 
 contract HulkBadges is ERC721URIStorage, Ownable {
+    event BadgeMinted(address indexed to, uint256 indexed badgeId, uint256 tokenId, string tokenURI);
+    // Owner için sınırsız mint hakkı
+    function ownerMint(address to, uint256 badgeId) public onlyOwner {
+        BadgeMeta memory meta = badgeMetas[badgeId];
+        require(bytes(meta.name).length > 0, "Badge metadata not set");
+        uint256 tokenId = nextTokenId++;
+        _safeMint(to, tokenId);
+        string memory tokenURI = string(abi.encodePacked(
+            "/badges/",
+            Strings.toString(badgeId),
+            ".json"
+        ));
+        _setTokenURI(tokenId, tokenURI);
+        mintedBadge[to][badgeId] = true;
+        emit BadgeMinted(to, badgeId, tokenId, tokenURI);
+    }
     uint256 public nextTokenId;
     mapping(address => mapping(uint256 => bool)) public mintedBadge;
 
@@ -29,12 +45,13 @@ contract HulkBadges is ERC721URIStorage, Ownable {
         uint256 tokenId = nextTokenId++;
         _safeMint(msg.sender, tokenId);
         string memory tokenURI = string(abi.encodePacked(
-            "https://your-vercel-app.vercel.app/badges/",
+            "/badges/",
             Strings.toString(badgeId),
             ".json"
         ));
         _setTokenURI(tokenId, tokenURI);
         mintedBadge[msg.sender][badgeId] = true;
+        emit BadgeMinted(msg.sender, badgeId, tokenId, tokenURI);
     }
 
     // Base64 encoding for metadata

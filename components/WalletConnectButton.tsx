@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { ethers } from 'ethers';
 
@@ -7,12 +8,15 @@ declare global {
   }
 }
 
-
 const WalletConnectButton: React.FC = () => {
   const [account, setAccount] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [network, setNetwork] = useState<string | null>(null);
   const [provider, setProvider] = useState<any>(null);
+
+  // Dil kontrolü
+  const lang = navigator.language.startsWith('tr') ? 'tr' : 'en';
+  const walletText = lang === 'tr' ? 'Cüzdan' : 'Wallet';
 
   const connectWallet = async () => {
     setError(null);
@@ -48,14 +52,14 @@ const WalletConnectButton: React.FC = () => {
           className="bg-gradient-to-b from-blue-600 to-blue-800 text-white font-bold py-2 px-5 rounded-lg shadow-lg hover:from-blue-700 hover:to-blue-900 transition"
           onClick={connectWallet}
         >
-          Cüzdanı Bağla
+          {walletText}
         </button>
       ) : (
         <div className="flex items-center space-x-3 bg-blue-900/80 px-4 py-2 rounded-lg">
           <button
             className="focus:outline-none"
             onClick={disconnectWallet}
-            title="Bağlantıyı Kes"
+            title={lang === 'tr' ? 'Bağlantıyı Kes' : 'Disconnect'}
             style={{ lineHeight: 0 }}
           >
             <span className="inline-block align-middle">
@@ -66,10 +70,10 @@ const WalletConnectButton: React.FC = () => {
             </span>
           </button>
           <span className="text-white font-mono text-base">
-            {account.slice(-6)}
+            {account ? account.slice(-6) : ''}
           </span>
-          <span className="text-white text-xs">
-            Base Testnet
+          <span className="font-extrabold text-white text-base drop-shadow-lg">
+            BASE SEPOLIA
           </span>
         </div>
       )}

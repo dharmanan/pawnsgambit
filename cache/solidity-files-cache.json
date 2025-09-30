@@ -38,8 +38,8 @@
       ]
     },
     "/workspaces/hulk/contracts/HulkBadges.sol": {
-      "lastModificationDate": 1759208676726,
-      "contentHash": "73fd5bdd85c336af976cc08e054d24b8",
+      "lastModificationDate": 1759222437766,
+      "contentHash": "575d862a8b834f2470a7123e98f263c8",
       "sourceName": "contracts/HulkBadges.sol",
       "solcConfig": {
         "version": "0.8.28",
@@ -67,7 +67,8 @@
       },
       "imports": [
         "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol",
-        "@openzeppelin/contracts/access/Ownable.sol"
+        "@openzeppelin/contracts/access/Ownable.sol",
+        "@openzeppelin/contracts/utils/Strings.sol"
       ],
       "versionPragmas": [
         "^0.8.20"

@@ -5,10 +5,11 @@
   "pegsRemaining": "Kalan Taş",
   "result": "Sonuç",
   "controls": {
-    "restart": "Yeniden Başlat",
-    "selectLevel": "Seviye Seç",
-    "stats": "İstatistikler",
-    "help": "Yardım"
+  "restart": "Yeniden Başlat",
+  "selectLevel": "Seviye Seç",
+  "stats": "İstatistikler",
+  "help": "Yardım",
+    "start": "Start"
   },
   "gameOver": {
     "title": "Oyun Bitti!",
@@ -96,5 +97,5 @@
     "brainless": "Beyinsiz"
   },
   "ratingWithScore": "{{rating}} ({{score}} Puan)",
-  "start": "Başlat"
+  "start": "Start"
 }
