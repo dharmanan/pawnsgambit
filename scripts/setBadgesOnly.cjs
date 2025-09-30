@@ -23,6 +23,23 @@ async function main() {
     console.log(`Badge ${meta.id} metadata set.`);
     await new Promise(r => setTimeout(r, 3000));
   }
+
+  // Başarı eklenip mint edilebilsin
+  async function mintBadgeWithAchievement(badgeId, achievement, toAddress) {
+    // Badge mint fonksiyonu: mintBadge(uint256 badgeId, string achievement, address to)
+    try {
+      const tx = await HulkBadges.mintBadge(badgeId, achievement, toAddress, {
+        gasPrice: hre.ethers.utils.parseUnits("30", "gwei")
+      });
+      await tx.wait();
+      console.log(`Badge ${badgeId} minted for ${toAddress} with achievement: ${achievement}`);
+    } catch (err) {
+      console.error("Mint error:", err);
+    }
+  }
+
+  // Örnek kullanım:
+  // await mintBadgeWithAchievement(0, "Seviye 3 birinci rozet", "0xYourAddressHere");
 }
 
 main().catch((error) => {

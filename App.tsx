@@ -69,10 +69,10 @@ const App: React.FC = () => {
     const [unlockedBadges, setUnlockedBadges] = useState<boolean[][]>([[false, false, false], [false, false, false], [false, false, false]]);
 
     useEffect(() => {
-        // achievementsByLevel'dan otomatik açılacak rozetleri hesapla
-        const newUnlocked = [0, 1, 2].map(lvlIdx => {
-            const levelBadges = stats.achievementsByLevel[lvlIdx + 1] || [];
-            return ACHIEVEMENT_LEVELS.map(level => levelBadges.includes(level.identifier));
+        // Her seviyede kalan taş sayısına göre sadece o seviyenin ilgili rozeti açılır
+        const newUnlocked = [1, 2, 3].map(lvl => {
+            const badges = stats.achievementsByLevel[lvl] || [];
+            return ["genius", "intelligent", "cunning"].map((identifier) => badges.includes(identifier));
         });
         setUnlockedBadges(newUnlocked);
     }, [stats]);
@@ -204,8 +204,30 @@ const App: React.FC = () => {
     useEffect(() => {
         const initialPegCount = LEVELS[level - 1]?.layout.flat().filter((c: number) => c === 1).length - 1;
         if (pegCount < initialPegCount && !gameEnded) {
-            // Sadece 3 taş kalınca başarı açılır
-            if (pegCount === 3) {
+            // Oyun sadece hamle kalmadığında veya 1 taş kaldığında bitsin
+            if (pegCount === 1) {
+                setGameEnded(true);
+                playSound('win');
+                setStats((prevStats: GameStats) => {
+                    const newGamesPlayed = prevStats.gamesPlayed + 1;
+                    const newTotalScore = prevStats.totalScore + getScoreFromPegs(pegCount);
+                    const newHighScore = Math.max(prevStats.highScore, getScoreFromPegs(pegCount));
+                    const newGamesWon = prevStats.gamesWon + 1;
+                    let currentLevelBadges = prevStats.achievementsByLevel[level] || [];
+                    // 1 taş: birinci rozet (genius)
+                    let newLevelBadges = [...new Set([...currentLevelBadges, 'genius'])];
+                    return {
+                        gamesPlayed: newGamesPlayed,
+                        totalScore: newTotalScore,
+                        highScore: newHighScore,
+                        gamesWon: newGamesWon,
+                        achievementsByLevel: {
+                            ...prevStats.achievementsByLevel,
+                            [level]: newLevelBadges,
+                        },
+                    };
+                });
+            } else if (!hasAnyValidMoves()) {
                 setGameEnded(true);
                 playSound('win');
                 setStats((prevStats: GameStats) => {
@@ -215,10 +237,10 @@ const App: React.FC = () => {
                     const newGamesWon = prevStats.gamesWon + 1;
                     let currentLevelBadges = prevStats.achievementsByLevel[level] || [];
                     let newLevelBadges = [...currentLevelBadges];
-                    // Seviye 1'de 'cunning' açıksa, seviye 2'de 3 taş bırakınca otomatik açılır
-                    if (level > 1 && (prevStats.achievementsByLevel[level - 1] || []).includes('cunning')) {
-                        newLevelBadges = [...new Set([...newLevelBadges, 'cunning'])];
-                    } else {
+                    // 2 taş: ikinci rozet (intelligent), 3 taş: üçüncü rozet (cunning)
+                    if (pegCount === 2) {
+                        newLevelBadges = [...new Set([...newLevelBadges, 'intelligent'])];
+                    } else if (pegCount === 3) {
                         newLevelBadges = [...new Set([...newLevelBadges, 'cunning'])];
                     }
                     return {
@@ -232,36 +254,6 @@ const App: React.FC = () => {
                         },
                     };
                 });
-            } else if (pegCount === 2) {
-                setGameEnded(true);
-                playSound('win');
-                setStats((prevStats: GameStats) => {
-                    const newGamesPlayed = prevStats.gamesPlayed + 1;
-                    const newTotalScore = prevStats.totalScore + getScoreFromPegs(pegCount);
-                    const newHighScore = Math.max(prevStats.highScore, getScoreFromPegs(pegCount));
-                    const newGamesWon = prevStats.gamesWon + 1;
-                    let currentLevelBadges = prevStats.achievementsByLevel[level] || [];
-                    let newLevelBadges = [...currentLevelBadges];
-                    // Seviye 1'de 'intelligent' açıksa, seviye 2'de 2 taş bırakınca otomatik açılır
-                    if (level > 1 && (prevStats.achievementsByLevel[level - 1] || []).includes('intelligent')) {
-                        newLevelBadges = [...new Set([...newLevelBadges, 'intelligent'])];
-                    } else {
-                        newLevelBadges = [...new Set([...newLevelBadges, 'intelligent'])];
-                    }
-                    return {
-                        gamesPlayed: newGamesPlayed,
-                        totalScore: newTotalScore,
-                        highScore: newHighScore,
-                        gamesWon: newGamesWon,
-                        achievementsByLevel: {
-                            ...prevStats.achievementsByLevel,
-                            [level]: newLevelBadges,
-                        },
-                    };
-                });
-            } else if (pegCount === 1 || !hasAnyValidMoves()) {
-                setGameEnded(true);
-                playSound('lose');
             }
         }
     }, [board, pegCount, gameEnded, hasAnyValidMoves, level]);
