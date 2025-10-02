@@ -25,8 +25,7 @@ const initialStats: GameStats = {
 
 const HULK_BADGES_ADDRESS = "0x3d9499563E72A637D4b45eCAFfA3c5e29357fB57";
 const HULK_BADGES_ABI = [
-    "function mintBadge(uint256 badgeId) external",
-    "function ownerMint(address to, uint256 badgeId) external"
+    "function mintBadge(uint256 badgeId) external"
 ];
 
 const App: React.FC = () => {
@@ -387,7 +386,7 @@ const App: React.FC = () => {
             const signer = provider.getSigner();
             const contract = new ethers.Contract(HULK_BADGES_ADDRESS, HULK_BADGES_ABI, signer);
             const userAddress = await signer.getAddress();
-            const tx = await contract.ownerMint(userAddress, badgeId);
+            const tx = await contract.mintBadge(badgeId);
             const receipt = await tx.wait();
             const event = receipt.events?.find((e: any) => e.event === "BadgeMinted");
                         if (event) {
