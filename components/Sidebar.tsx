@@ -18,7 +18,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, stats, unlockedBadge
     const { t } = useTranslation();
     const [activeTab, setActiveTab] = useState<ActiveTab>('stats');
 
-    const sidebarClasses = `fixed top-0 left-0 h-full bg-[#1a472a] bg-opacity-90 backdrop-blur-sm border-r-2 border-yellow-400/20 shadow-2xl z-50 w-full max-w-sm p-4 transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : '-translate-x-full'}`;
+    const sidebarClasses = `fixed top-0 left-0 h-full bg-[#1a472a] bg-opacity-90 backdrop-blur-sm border-r-2 border-yellow-400/20 shadow-2xl z-50 w-full max-w-sm p-4 transition-transform duration-300 ease-in-out overflow-y-auto ${isOpen ? 'translate-x-0' : '-translate-x-full'}`;
     const backdropClasses = `fixed inset-0 bg-black/50 z-40 transition-opacity duration-300 ease-in-out ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`;
 
     const getTabClasses = (tabName: ActiveTab) => (
