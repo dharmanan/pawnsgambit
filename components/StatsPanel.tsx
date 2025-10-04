@@ -42,7 +42,7 @@ const StatsPanel: React.FC<StatsPanelProps> = ({ stats, unlockedBadges }) => {
                         <span className="font-extrabold text-xl mb-2 text-yellow-500 drop-shadow text-center tracking-wide uppercase">{t('level') + ' ' + (level + 1)}</span>
                         <div className="flex flex-row gap-8 justify-center items-end mb-1">
                             {[0, 1, 2].map(badge => (
-                                <div key={badge} className="flex flex-col items-center justify-between h-40 sm:h-40 h-44 w-24 sm:w-32">
+                                <div key={badge} className="flex flex-col items-center justify-between h-40">
                                     <div
                                         className={`transition-all duration-150 rounded-full border-2 p-2 bg-transparent shadow ${unlockedBadges[level][badge] ? 'border-green-400' : 'border-gray-400 opacity-50'} `}
                                         title={t(`achievements.${ACHIEVEMENT_LEVELS[badge].identifier}.name`)}
@@ -53,7 +53,7 @@ const StatsPanel: React.FC<StatsPanelProps> = ({ stats, unlockedBadges }) => {
                                             className={`w-20 h-20 object-contain ${unlockedBadges[level][badge] ? '' : 'opacity-50 grayscale'}`}
                                         />
                                     </div>
-                                    <span className={`mt-3 text-sm sm:text-base font-bold text-center min-h-[2.5em] sm:min-h-[2.2em] flex items-center justify-center break-words whitespace-normal ${unlockedBadges[level][badge] ? 'text-green-700' : 'text-gray-400'}`}>{t(`achievements.${ACHIEVEMENT_LEVELS[badge].identifier}.name`)}</span>
+                                    <span className={`mt-3 text-base font-bold text-center min-h-[2.2em] flex items-center justify-center ${unlockedBadges[level][badge] ? 'text-green-700' : 'text-gray-400'}`}>{t(`achievements.${ACHIEVEMENT_LEVELS[badge].identifier}.name`)}</span>
                                 </div>
                             ))}
                         </div>
